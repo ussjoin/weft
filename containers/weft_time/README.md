@@ -15,7 +15,7 @@ This is a container providing GPS-linked time services.
 }
 ```
 
-This is generated and sent in [config/send_loc](config/send_loc). 
+This is generated and sent in [config/send_loc](config/send_loc).
 
 ## External Services
 
