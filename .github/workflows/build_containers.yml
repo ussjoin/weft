@@ -29,4 +29,5 @@ jobs:
       #     username: ${{ github.repository_owner }}
       #     password: ${{ secrets.CR_PAT }}
       -
-        run: echo ${{ github.event }}
+        name: Println Debug
+        run: echo ${{ toJson(github.event) }}
