@@ -34,5 +34,8 @@ jobs:
           fetch-depth: 2 # Enable git diff-tree to work
       - 
         name: Get name of changed container(s)
-        id: container_name
+        id: getnames
         run: echo "::set-output name=container_name::$(git diff-tree --no-commit-id --name-only -r ${{ github.event.after }} | grep -oE '^containers\/([^/]+)/' | cut -d'/' -f2)\n"
+      -
+        name: OK now output it
+        run: echo ${{ steps.getnames.outputs.container_name }}
