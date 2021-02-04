@@ -26,10 +26,10 @@ docker buildx create --name nubuilder --use
 docker buildx inspect --bootstrap
 ```
 
--- To build this image and push it to theregistry:
+-- To build this image and push it to the registry:
 
 ```
-THE_REGISTRY=fun.horse
+THE_REGISTRY=ghcr.io/ussjoin
 THE_IMAGE=weft_mqtt
 docker buildx build . -t $THE_REGISTRY/$THE_IMAGE --platform linux/arm/v7 --load
 docker push $THE_REGISTRY/$THE_IMAGE
@@ -38,7 +38,7 @@ docker push $THE_REGISTRY/$THE_IMAGE
 ## Build (Native)
 
 ```
-THE_REGISTRY=fun.horse
+THE_REGISTRY=ghcr.io/ussjoin
 THE_IMAGE=weft_mqtt
 docker build -t $THE_REGISTRY/$THE_IMAGE .
 docker push $THE_REGISTRY/$THE_IMAGE
@@ -46,12 +46,12 @@ docker push $THE_REGISTRY/$THE_IMAGE
 
 ## Config
 
-Look in the `files` directory. Currently these are done at runtime (see Run below).
+There isn't actually as much config as you'd think---Mosquitto's defaults are pretty close---but anyway, look at [files/mosquitto.conf](files/mosquitto.conf) for the Mosquitto config file. It's placed in at build time.
 
 ## Run
 
 ```
-THE_REGISTRY=fun.horse
+THE_REGISTRY=ghcr.io/ussjoin
 docker run -d --rm \
     -p 1883:1883 \
     -p 9001:9001 \
