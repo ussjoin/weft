@@ -1,16 +1,16 @@
 name: Build Docker Container
 on:
+  push:
+    branches: 
+      - main
+    paths:
+      - 'containers/**'
   workflow_dispatch:
     inputs:
       name:
         description: 'Container to Build'
         required: true
         default: 'weft_time'
-  push:
-    branches: main
-    # file paths to consider in the event. Optional; defaults to all.
-    paths:
-      - 'containers/**'
 jobs:
   build_container:
     runs-on: ubuntu-latest
