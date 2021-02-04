@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Technically this might cause an issue if there's weird slippage between "now"
+# as known to the system clock, and the GPS time...
+# But this container runs chrony for the exact purpose of fixing that.
+# And it's much easier to use the builtin "now" function. So we're gonna do that.
+
+gpspipe -w -n 5 | grep TPV | tail -n 1 | jq '{type:"time",time:now|round,coordinates:{lat:.lat,lon:.lon}}' | mosquitto_pub -h $MQTT_HOST -p $MQTT_PORT -t liefi/location -s
