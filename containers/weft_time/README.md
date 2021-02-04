@@ -35,10 +35,10 @@ docker buildx create --name nubuilder --use
 docker buildx inspect --bootstrap
 ```
 
--- To build this image and push it to theregistry:
+-- To build this image and push it to the registry:
 
 ```
-THE_REGISTRY=fun.horse
+THE_REGISTRY=ghcr.io/ussjoin
 THE_IMAGE=weft_time
 docker buildx build . -t $THE_REGISTRY/$THE_IMAGE --platform linux/arm/v7 --load
 docker push $THE_REGISTRY/$THE_IMAGE
@@ -46,7 +46,7 @@ docker push $THE_REGISTRY/$THE_IMAGE
 
 ## Build (Native)
 
-THE_REGISTRY=fun.horse
+THE_REGISTRY=ghcr.io/ussjoin
 THE_IMAGE=weft_time
 docker build -t $THE_REGISTRY/$THE_IMAGE .
 docker push $THE_REGISTRY/$THE_IMAGE
@@ -59,7 +59,7 @@ Look in the `config` directory. These configs are placed in during build, not at
 ## Run
 
 ```
-THE_REGISTRY=fun.horse
+THE_REGISTRY=ghcr.io/ussjoin
 docker run -d --rm --cap-add SYS_TIME \
     -p 123:123/udp \
     -p 2947:2947/tcp \
