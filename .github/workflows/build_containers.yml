@@ -21,21 +21,34 @@ jobs:
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      # -
-      #   name: Login to GitHub Container Registry
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.repository_owner }}
-      #     password: ${{ secrets.CR_PAT }}
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 2 # Enable git diff-tree to work
       - 
-        name: Get name of changed container(s)
+        name: Get name of changed container
         id: getnames
-        run: echo "::set-output name=container_name::$(git diff-tree --no-commit-id --name-only -r ${{ github.event.after }} | grep -oE '^containers\/([^/]+)/' | cut -d'/' -f2)\n"
+        run: echo "::set-output name=container_name::$(git diff-tree --no-commit-id --name-only -r ${{ github.event.after }} | grep -oE '^containers\/([^/]+)/' | cut -d'/' -f2)"
       -
         name: OK now output it
         run: echo ${{ steps.getnames.outputs.container_name }}
+      - 
+        name: Build and push Docker images
+        uses: docker/build-push-action@v2
+        id: docker_build
+        with:
+          tags: ghcr.io/${{ github.repository_owner }}/${{ steps.getnames.outputs.container_name }}
+          platforms: linux/arm/v7
+          context: containers/${{ steps.getnames.outputs.container_name }}
+          #file: containers/${{ steps.getnames.outputs.container_name }}/Dockerfile
+          push: true
+      -
+          name: Image digest
+          run: echo ${{ steps.docker_build.outputs.digest }}
