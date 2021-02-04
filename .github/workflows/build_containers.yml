@@ -5,12 +5,6 @@ on:
       - main
     paths:
       - 'containers/**'
-  # workflow_dispatch:
-  #   inputs:
-  #     name:
-  #       description: 'Container to Build'
-  #       required: true
-  #       default: 'weft_time'
 jobs:
   build_container:
     runs-on: ubuntu-latest
