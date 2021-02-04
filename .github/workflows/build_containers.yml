@@ -37,7 +37,7 @@ jobs:
         id: getnames
         run: echo "::set-output name=container_name::$(git diff-tree --no-commit-id --name-only -r ${{ github.event.after }} | grep -oE '^containers\/([^/]+)/' | cut -d'/' -f2)"
       -
-        name: OK now output it
+        name: Print name of container to be built
         run: echo ${{ steps.getnames.outputs.container_name }}
       - 
         name: Build and push Docker images
@@ -47,7 +47,6 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/${{ steps.getnames.outputs.container_name }}
           platforms: linux/arm/v7
           context: containers/${{ steps.getnames.outputs.container_name }}
-          #file: containers/${{ steps.getnames.outputs.container_name }}/Dockerfile
           push: true
       -
           name: Image digest
