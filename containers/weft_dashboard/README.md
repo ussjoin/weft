@@ -8,7 +8,7 @@ The demo dashboard [site/](site/) is (Apache 2 licensed) https://github.com/hive
 
 ## External Services
 
-* HTTPS: Port 443/tcp
+* HTTP: Port 8000/tcp - but you should use an external nginx to proxy to this instead, and add HTTPS.
 
 ## Build (Using Docker BuildX)
 
@@ -45,7 +45,7 @@ docker push $THE_REGISTRY/$THE_IMAGE
 ```
 THE_REGISTRY=ghcr.io/ussjoin
 docker run -d --rm \
-    -p 8000:80 \
+    -p 8000 \
     $THE_REGISTRY/weft_dashboard
 ```
 
