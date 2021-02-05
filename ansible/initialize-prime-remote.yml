@@ -1,0 +1,61 @@
+---
+- hosts: 'prime.weft'
+  tasks:
+    # Initial config we would do for any RasPi node.
+    - name: Upgrade Installed Packages
+      apt: upgrade=dist update_cache=true
+      become: yes
+    - name: Expand RootFS
+      shell: raspi-config nonint do_expand_rootfs
+      become: yes
+    - name: Set Hostname
+      shell: raspi-config nonint do_hostname prime.weft
+      become: yes
+    - name: Set Memory Split
+      shell: raspi-config nonint do_memory_split 4
+      become: yes
+    - name: Set Time Zone
+      shell: raspi-config nonint do_change_timezone America/Los_Angeles
+      become: yes
+    - name: Set Locale
+      shell: raspi-config nonint do_change_locale en_US.UTF-8
+      become: yes
+    - name: Set Keyboard
+      shell: raspi-config nonint do_configure_keyboard us
+      become: yes
+    
+    # OK, now things we want on the prime node.
+    - name: Install New Packages
+      become: yes
+      apt:
+        state: present
+        name:
+          - docker.io
+          - python3-docker
+          - ansible
+          - mosquitto-clients # used for send_temp
+          - bc # used for send_temp
+          - nginx # used for reverse proxy on primary node
+          - dnsmasq # To service worker nodes
+          - dhcpcd # To service worker nodes
+          - git # To pull down the Weft repo and get the Ansible playbooks
+          - screen
+          - vim
+    - name: Add Pi to Docker Users
+      user:
+        name: pi
+        groups: docker
+        append: yes
+      become: yes
+    - name: Git checkout
+      git:
+        repo: 'https://github.com/ussjoin/weft.git'
+        dest: /home/pi/weft
+        
+    # Do this last bit last; if you don't, it messes up the docker installation due to the hostname switch. I swear.
+    - name: Set Hostname
+      shell: raspi-config nonint do_hostname prime.weft
+      become: yes
+    - name: Reboot the prime node
+      become: yes
+      reboot:
