@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+echo "{'type': 'temp', 'time': '$(date -u +%s)', 'object': {'name': '$(hostname)', 'temp': '$(echo "scale=2; $(cat /sys/class/thermal/thermal_zone0/temp)/1000.0" | bc)'}}" \
+| mosquitto_pub -h mqtt.weft -p 1883 -t weft/temp -l

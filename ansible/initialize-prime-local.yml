@@ -1,0 +1,178 @@
+# Meant to be run locally, on the prime node itself.
+---
+- hosts: localhost
+  tasks:
+    - name: Create CA directory
+      file:
+        path: /home/pi/ca
+        state: directory
+        mode: '0700'
+    - name: Create Certs directory
+      file:
+        path: /home/pi/certs
+        state: directory
+        mode: '0700'
+
+    # My thanks to https://milliams.com/posts/2020/ansible-certificate-authority/ for documenting this.
+    - name: Create CA key
+      openssl_privatekey:
+        path: /home/pi/ca/CA_key.pem
+      register: ca_key
+    - name: Create the CA CSR
+      openssl_csr:
+        path: /home/pi/ca/CA.csr
+        privatekey_path: "{{ ca_key.filename }}"
+        common_name: "my-ca"
+      register: ca_csr
+    - name: Sign the CA CSR
+      openssl_certificate:
+        path: /home/pi/ca/CA.crt
+        csr_path: "{{ ca_csr.filename }}"
+        privatekey_path: "{{ ca_key.filename }}"
+        provider: selfsigned
+      register: ca_crt
+      
+    # Dashboard Cert
+    - name: Create dashboard CSR signing key
+      openssl_privatekey:
+        path: /home/pi/certs/dashboard_weft_host_key.pem
+      register: dashboard_weft_key
+    - name: Create the CSR for the dashboard
+      openssl_csr:
+        path: /home/pi/certs/dashboard_weft.csr
+        privatekey_path: "{{ dashboard_weft_key.filename }}"
+        common_name: dashboard.weft
+        subject_alt_name: 'DNS:dashboard.weft'
+      register: dashboard_weft_csr
+    - name: Sign the CSR for the dashboard
+      openssl_certificate:
+        path: /home/pi/certs/dashboard_weft.crt
+        csr_path: "{{ dashboard_weft_csr.filename }}"
+        provider: ownca
+        ownca_path: "{{ ca_crt.filename }}"
+        ownca_privatekey_path: "{{ ca_key.filename }}"
+      register: dashboard_weft_crt
+      
+    # Registry Cert
+    - name: Create registry CSR signing key
+      openssl_privatekey:
+        path: /home/pi/certs/registry_weft_host_key.pem
+      register: registry_weft_key
+    - name: Create the CSR for the registry
+      openssl_csr:
+        path: /home/pi/certs/registry_weft.csr
+        privatekey_path: "{{ registry_weft_key.filename }}"
+        common_name: registry.weft
+        subject_alt_name: 'DNS:registry.weft'
+      register: registry_weft_csr
+    - name: Sign the CSR for the registry
+      openssl_certificate:
+        path: /home/pi/certs/registry_weft.crt
+        csr_path: "{{ registry_weft_csr.filename }}"
+        provider: ownca
+        ownca_path: "{{ ca_crt.filename }}"
+        ownca_privatekey_path: "{{ ca_key.filename }}"
+      register: registry_weft_crt
+      
+    # MQTT Cert
+    - name: Create mqtt CSR signing key
+      openssl_privatekey:
+        path: /home/pi/certs/mqtt_weft_host_key.pem
+      register: mqtt_weft_key
+    - name: Create the CSR for the mqtt
+      openssl_csr:
+        path: /home/pi/certs/mqtt_weft.csr
+        privatekey_path: "{{ mqtt_weft_key.filename }}"
+        common_name: mqtt.weft
+        subject_alt_name: 'DNS:mqtt.weft'
+      register: mqtt_weft_csr
+    - name: Sign the CSR for the mqtt
+      openssl_certificate:
+        path: /home/pi/certs/mqtt_weft.crt
+        csr_path: "{{ mqtt_weft_csr.filename }}"
+        provider: ownca
+        ownca_path: "{{ ca_crt.filename }}"
+        ownca_privatekey_path: "{{ ca_key.filename }}"
+      register: mqtt_weft_crt
+    
+    # Generate local SSH keypair to push to nodes
+    - name: Generate prime.weft SSH keypair
+      shell: ssh-keygen -q -N "" -f /home/pi/.ssh/id_rsa
+        
+    # Set up routing for worker nodes
+    - name: Install Routing Packages
+      become: yes
+      apt:
+        state: present
+        name:
+          - dhcpcd
+          - dnsmasq
+    - name: Copy Routing Config Files 1/5
+      become: yes
+      copy:
+        src: ./files/prime_files/rc.local
+        dest: /etc
+        owner: root
+        group: root
+        mode: u=rwx,g=r,o=r
+    - name: Copy Routing Config Files 2/5
+      become: yes
+      copy:
+        src: ./files/prime_files/iptables.ipv4.nat
+        dest: /etc
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+    - name: Copy Routing Config Files 3/5
+      become: yes
+      copy:
+        src: ./files/prime_files/iptables.ipv6.nat
+        dest: /etc
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+    - name: Copy Routing Config Files 4/5
+      become: yes
+      copy:
+        src: ./files/prime_files/dhcpcd.conf
+        dest: /etc
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+    - name: Copy Routing Config Files 5/5
+      become: yes
+      copy:
+        src: ./files/prime_files/dnsmasq.conf
+        dest: /etc
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+    - name: Configure Packet Forwarding
+      become: yes
+      blockinfile:
+        dest: /etc/sysctl.conf
+        block: |
+          net.ipv4.ip_forward=1
+          net.ipv6.conf.all.forwarding=1
+    - name: Create dnsmasq hosts directory
+      become: yes
+      file:
+        path: /etc/weft-hosts
+        state: directory
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+    # Set up generic node stuff
+    - name: Put the send_temp utility in place
+      copy:
+        src: ./files/send_temp
+        dest: /home/pi/send_temp
+        owner: pi
+        group: pi
+        mode: a+rx
+    - name: Measure temperature, send it to MQTT every 5 minutes.
+      cron:
+        name: "Measure Temperature"
+        minute: "*/5"
+        state: present
+        job: "/home/pi/send_temp"

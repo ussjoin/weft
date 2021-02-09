@@ -32,6 +32,7 @@
         name:
           - docker.io
           - python3-docker
+          - python3-openssl # Used by Ansible OpenSSL module
           - ansible
           - mosquitto-clients # used for send_temp
           - bc # used for send_temp
@@ -39,8 +40,9 @@
           - dnsmasq # To service worker nodes
           - dhcpcd # To service worker nodes
           - git # To pull down the Weft repo and get the Ansible playbooks
-          - screen
-          - vim
+          - screen # Simply really, really useful
+          - vim # Simply really, really useful
+          - nmap # Simply really, really useful
     - name: Add Pi to Docker Users
       user:
         name: pi
