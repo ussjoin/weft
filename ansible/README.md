@@ -51,7 +51,7 @@ You need to decide on three items for each worker node:
 * Hostname: as discussed above.
 * MAC address: of the worker node, because this is how DNSMasq will identify it. You want it in lowercase, colon-delimited format, e.g., `aa:bb:cc:dd:ee:ff`.
 
-Then for each worker, run:
+Then for each worker, run (on the Prime node):
 
 ```
 ansible-playbook add-worker.yml --extra-vars "fourth_octet=3 mac_address=aa:bb:cc:dd:ee:ff hostname=blue"
