@@ -8,9 +8,6 @@
     - name: Expand RootFS
       shell: raspi-config nonint do_expand_rootfs
       become: yes
-    - name: Set Hostname
-      shell: raspi-config nonint do_hostname prime.weft
-      become: yes
     - name: Set Memory Split
       shell: raspi-config nonint do_memory_split 4
       become: yes
@@ -23,7 +20,13 @@
     - name: Set Keyboard
       shell: raspi-config nonint do_configure_keyboard us
       become: yes
-    
+    - name: Set Hostname
+      shell: raspi-config nonint do_hostname prime.weft
+      become: yes
+    - name: Reboot the prime node the first time (for kernel upgrades)
+      become: yes
+      reboot:
+        
     # OK, now things we want on the prime node.
     - name: Install New Packages
       become: yes
@@ -31,9 +34,9 @@
         state: present
         name:
           - docker.io
+          - ansible
           - python3-docker # Used by Ansible Docker module
           - python3-openssl # Used by Ansible OpenSSL module
-          - ansible
           - mosquitto-clients # used for send_temp
           - bc # used for send_temp
           - nginx # used for reverse proxy on primary node
@@ -49,7 +52,7 @@
         groups: docker
         append: yes
       become: yes
-    - name: Git checkout
+    - name: Git checkout of Weft repo
       git:
         repo: 'https://github.com/ussjoin/weft.git'
         dest: /home/pi/weft
@@ -61,10 +64,6 @@
         owner: root
         group: root
         mode: u=rw,g=r,o=r
-    # Do this last bit last; if you don't, it messes up the docker installation due to the hostname switch. I swear.
-    - name: Set Hostname
-      shell: raspi-config nonint do_hostname prime.weft
-      become: yes
-    - name: Reboot the prime node
+    - name: Reboot the prime node one last time
       become: yes
       reboot:
