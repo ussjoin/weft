@@ -4,9 +4,6 @@
     - name: Update Packages
       apt: upgrade=dist update_cache=true
       become: yes
-    - name: Update raspi-config
-      apt: pkg=raspi-config state=present update_cache=true
-      become: yes
     - name: Expand RootFS
       shell: raspi-config nonint do_expand_rootfs
       become: yes
@@ -17,7 +14,7 @@
       shell: raspi-config nonint do_memory_split 4
       become: yes
     - name: Set Time Zone
-      shell: sudo raspi-config nonint do_change_timezone America/Los_Angeles
+      shell: raspi-config nonint do_change_timezone America/Los_Angeles
       become: yes
     - name: Set Locale
       shell: raspi-config nonint do_change_locale en_US.UTF-8
