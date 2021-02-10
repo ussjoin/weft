@@ -31,7 +31,7 @@
         state: present
         name:
           - docker.io
-          - python3-docker
+          - python3-docker # Used by Ansible Docker module
           - python3-openssl # Used by Ansible OpenSSL module
           - ansible
           - mosquitto-clients # used for send_temp
@@ -53,7 +53,14 @@
       git:
         repo: 'https://github.com/ussjoin/weft.git'
         dest: /home/pi/weft
-        
+    - name: Set base Ansible host list
+      become: yes
+      copy:
+        src: ./files/prime_files/ansible_hosts.ini
+        dest: /etc/ansible/hosts
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
     # Do this last bit last; if you don't, it messes up the docker installation due to the hostname switch. I swear.
     - name: Set Hostname
       shell: raspi-config nonint do_hostname prime.weft

@@ -1,0 +1,50 @@
+# Required variables:
+# fourth_octet: the last bit of the IP address for this new host.
+# mac_address: the MAC address (aa:bb:cc:dd:ee:ff - yes, use lowercase) of the host.
+# hostname: the host name to assign the new host.
+
+---
+- hosts: prime
+  tasks:
+    - name: "Add to /etc/hosts"
+      become: yes
+      lineinfile:
+        path: /etc/hosts
+        line: "10.10.220.{{ fourth_octet }}    {{ hostname }}"
+    - name: "Add to DNSMasq"
+      become: yes
+      lineinfile:
+        path: /etc/dnsmasq.conf
+        insertafter: '^\# Here are DHCP-Host Lines'
+        line: "dhcp-host={{ mac_address }},{{ hostname }},10.10.220.{{ fourth_octet }}"
+    - name: "Add to Ansible Hosts 1/2"
+      become: yes
+      lineinfile:
+        path: /etc/ansible/hosts 
+        insertafter: '^\[workers\:children\]$'
+        line: "{{ hostname }}"
+    - name: "Add to Ansible Hosts 2/2"
+      become: yes
+      blockinfile:
+        path: /etc/ansible/hosts 
+        insertafter: EOF
+        marker: "# {mark} ANSIBLE MANAGED BLOCK for {{ hostname }}"
+        block: |
+          [{{ hostname }}]
+          {{ hostname }}.weft
+    - name: Remove lease from existing dnsmasq leases
+      become: yes
+      lineinfile:
+        path: /var/lib/misc/dnsmasq.leases 
+        state: absent
+        regexp: '{{ mac_address }}'
+    - name: Restart dnsmasq
+      become: yes
+      service:
+        name: dnsmasq
+        state: restarted
+    - name: Pause for 120 seconds to allow DHCP address to change on {{ hostname }} - 120 seconds is DNSMasq minimum DHCP lease
+      pause:
+        seconds: 120
+    - name: "Push SSH Key"
+      shell: cat ~/.ssh/id_rsa.pub | ssh pi@{{ hostname }}.weft "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"

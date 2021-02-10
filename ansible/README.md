@@ -30,6 +30,24 @@ network={
 * `ansible-playbook initialize-prime-local.yml`
 
 
+## How to Add Worker Nodes
+
+Decide on a worker node naming scheme; it's fine to call them worker1, worker2, etc., or name them on some other basis. (For small clusters, I often name them based on color of Ethernet cables.)
+
+You need to decide on three items for each worker node:
+
+* IP address: it'll be `10.10.220.x` where `x` is a number between 3 and 50. (You can change this in `dnsmasq.conf` if you wish). You just specify the `x` below.
+* Hostname: as discussed above.
+* MAC address: of the worker node, because this is how DNSMasq will identify it. You want it in lowercase, colon-delimited format, e.g., `aa:bb:cc:dd:ee:ff`.
+
+Then run:
+
+```
+ansible-playbook add-worker.yml --extra-vars "fourth_octet=3 mac_address=aa:bb:cc:dd:ee:ff hostname=blue"
+```
+
+The playbook has a 120-second pause; this is because DNSMasq can't give nodes a DHCP lease of less than 120 seconds, so it takes that long for the node to release its old IP address and pick up the new one. After that, you will likely get an SSH prompt to accept a host key and then enter a password; if you're using default Raspbian, the password is `raspberry`. This is the end of the Ansible script, where it is pushing the `prime.weft` SSH public key to the nodes.
+
 
 ## Notes for Future Upgrades
 

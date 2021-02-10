@@ -1,6 +1,6 @@
 # Meant to be run locally, on the prime node itself.
 ---
-- hosts: localhost
+- hosts: prime
   tasks:
     - name: Create CA directory
       file:
@@ -154,14 +154,6 @@
         block: |
           net.ipv4.ip_forward=1
           net.ipv6.conf.all.forwarding=1
-    - name: Create dnsmasq hosts directory
-      become: yes
-      file:
-        path: /etc/weft-hosts
-        state: directory
-        owner: root
-        group: root
-        mode: u=rw,g=r,o=r
     # Set up generic node stuff
     - name: Put the send_temp utility in place
       copy:
