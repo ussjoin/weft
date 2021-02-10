@@ -154,6 +154,12 @@
         block: |
           net.ipv4.ip_forward=1
           net.ipv6.conf.all.forwarding=1
+    - name: Increase max Ansible tasks in parallel
+      become: yes
+      lineinfile:
+        dest: /etc/ansible/ansible.cfg
+        regexp: '^\#forks\s+\=\s+5'
+        line: "forks = 20"
     # Set up generic node stuff
     - name: Put the send_temp utility in place
       copy:
