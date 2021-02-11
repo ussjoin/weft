@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+    - name: Update host packages on all nodes
+      apt: upgrade=dist update_cache=true
+      become: yes
+- hosts: workers
+  tasks:
+    - name: Reboot all worker nodes (reboot the prime node yourself)
+      become: yes
+      reboot:
