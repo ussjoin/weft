@@ -1,4 +1,6 @@
-FROM arm32v7/alpine:latest
+# Because the alpine 3.13 series is nonfunctional on Raspberry Pi. Known issue: https://gitlab.alpinelinux.org/alpine/aports/-/issues/12091
+# (As of this writing, latest == 3.13.1 and has this issue, verified by me.)
+FROM alpine:3.12
 
 # This line links GHCR.io with the repository.
 LABEL org.opencontainers.image.source=https://github.com/ussjoin/weft/tree/main/containers/weft_time
