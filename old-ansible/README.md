@@ -54,8 +54,8 @@ You need to decide on three items for each worker node:
 Then for each worker, run (on the Prime node):
 
 ```
-ansible-playbook add-worker.yml --extra-vars "fourth_octet=3 mac_address=aa:bb:cc:dd:ee:ff hostname=blue"
-ansible-playbook initialize-worker.yml --extra-vars "hostname=blue"
+ansible-playbook add-worker.yml --extra-vars "fourth_octet=3 mac_address=aa:bb:cc:dd:ee:ff hostname=whatever"
+ansible-playbook initialize-worker.yml --extra-vars "hostname=whatever"
 ```
 
 The `add-worker` playbook has a 120-second pause; this is because DNSMasq can't give nodes a DHCP lease of less than 120 seconds, so it takes that long for the node to release its old IP address and pick up the new one. After that, you will likely get an SSH prompt to accept a host key and then enter a password; if you're using default Raspbian, the password is `raspberry`. This is the end of the Ansible script, where it is pushing the `prime.weft` SSH public key to the nodes.
