@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+    - name: Update all packages to their latest version
+      become: yes
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+    - name: Reboot
+      become: yes
+      reboot:
